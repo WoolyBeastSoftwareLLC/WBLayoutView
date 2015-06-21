@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, WBLayoutViewAlignment) {
 	WBLayoutViewAlignmentCenter,
 };
 
+// future work
 typedef NS_ENUM(NSInteger, WBLayoutViewDistribution) {
 	WBLayoutViewDistributionEqualSpacing
 };
@@ -24,6 +25,7 @@ typedef NS_ENUM(NSInteger, WBLayoutViewDistribution) {
 @interface WBLayoutView : UIView
 @property (nonatomic) UILayoutConstraintAxis axis;
 @property (nonatomic) WBLayoutViewAlignment alignment;
+@property (nonatomic) WBLayoutViewDistribution distribution;
 @property (nonatomic) CGFloat spacing;
 
 @property (nonatomic,copy) NSArray *arrangedSubviews;

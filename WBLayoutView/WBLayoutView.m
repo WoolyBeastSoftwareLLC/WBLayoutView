@@ -21,6 +21,11 @@
 #define UILayoutConstraintAxisIsVertical(axis)		(axis==UILayoutConstraintAxisVertical)
 
 @implementation WBLayoutView
++ (Class)layerClass
+{
+	return [CATransformLayer class];
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
 	if ( self = [super initWithFrame:frame], self ) {
@@ -156,9 +161,6 @@
 		self.arrangedSubviews = [self.arrangedSubviews arrayByAddingObject:subview];
 		[self addSubview:subview];
 		[self setNeedsUpdateConstraints];
-		
-		subview.layer.borderWidth = 1.0;
-		subview.layer.borderColor = [[UIColor redColor] CGColor];
 	}
 }
 
