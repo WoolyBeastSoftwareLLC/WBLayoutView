@@ -30,8 +30,7 @@
 	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:(CGRect){CGPointZero,(CGSize){200.0,15.0}}];
 	layoutView.axis = UILayoutConstraintAxisVertical;
 	layoutView.spacing = 5.0;
-	layoutView.alignment = WBLayoutViewAlignmentFill;
-	layoutView.backgroundColor = [UIColor greenColor];
+	layoutView.alignment = WBLayoutViewAlignmentCenter;
 	layoutView.autoresizingMask = UIViewAutoresizingNone;
 	[self.view addSubview:layoutView];
 	_layoutView = layoutView;
