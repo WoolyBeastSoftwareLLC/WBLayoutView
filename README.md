@@ -3,7 +3,7 @@ Provides a linear auto layout view along either x or y axis, with various alignm
 This view works much like something that may or may not be provided by another company in an upcoming
 release of their software.
 
-h5. Usage
+##Usage
 
     WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:<some frame>];
     layoutView.axis = UILayoutConstraintAxisVertical; // or UILayoutConstraintAxisHorizontal
