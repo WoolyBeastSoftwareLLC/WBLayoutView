@@ -18,3 +18,15 @@ release of their software.
     [layoutView addArrangedSubview:<some subview #n>];  // last subview
     [layoutView addSubview:<some non-arranged subview>];  // add subviews that are managed independently
     
+##One More Thing...
+Contains WBLayoutAnchor object and category on UIView to simplify the creation of constraints.
+
+Simplifies...
+
+    [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual 
+    toItem:otherView attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:8.0];
+
+to...
+
+    [view.leadingAnchor constraintEqualTo:otherView.trailingAnchor constant:8.0];
+    
