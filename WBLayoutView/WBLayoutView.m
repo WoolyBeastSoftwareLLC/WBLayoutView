@@ -30,6 +30,7 @@
 #import "WBLayoutAnchor.h"
 #import <QuartzCore/QuartzCore.h>
 
+#define _DEBUG_	!0
 @interface WBLayoutView()
 @property (nonatomic) NSArray *layoutConstraints;
 
@@ -41,10 +42,12 @@
 #define UILayoutConstraintAxisIsVertical(axis)		(axis==UILayoutConstraintAxisVertical)
 
 @implementation WBLayoutView
+#if !_DEBUG_
 + (Class)layerClass
 {
 	return [CATransformLayer class];
 }
+#endif
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -54,6 +57,10 @@
 		_axis = UILayoutConstraintAxisVertical;
 		_distribution = WBLayoutViewDistributionEqualSpacing;
 		_spacing = 8.0;
+#if _DEBUG_
+		self.layer.borderColor = [[UIColor redColor] CGColor];
+		self.layer.borderWidth = 1.0;
+#endif
 	}
 	return self;
 }
@@ -74,9 +81,11 @@
 	NSArray *views = self.arrangedSubviews;
 	UIView *previousView = nil;
 	for ( UIView *view in views ) {
-		NSArray *viewConstraints = [self constraintsForView:view relativeToPreviousView:previousView];
-		[constraints addObjectsFromArray:viewConstraints];
-		previousView = view;
+		if ( !view.isHidden) {
+			NSArray *viewConstraints = [self constraintsForView:view relativeToPreviousView:previousView];
+			[constraints addObjectsFromArray:viewConstraints];
+			previousView = view;
+		}
 	}
 
 	// remove our old constraints...
@@ -110,7 +119,7 @@
 	NSLayoutAttribute layoutAttribute = NSLayoutAttributeNotAnAttribute;
 
 	WBLayoutViewAlignment alignment = self.alignment;
-	CGFloat spacing = self.spacing;
+	CGFloat spacing = (previousView) ? self.spacing : 0.0;
 	switch ( alignment ) {
 		case WBLayoutViewAlignmentFill : {
 			NSLayoutAttribute edge1Attribute = (isVerticalAxis) ? NSLayoutAttributeLeading : NSLayoutAttributeTop;
@@ -133,7 +142,6 @@
 			
 		case WBLayoutViewAlignmentCenter :
 			layoutAttribute = (isVerticalAxis) ? NSLayoutAttributeCenterX : NSLayoutAttributeCenterY;
-			spacing = 0.0;
 			break;
 	}
 
@@ -148,8 +156,8 @@
 		previousViewAnchor =  [previousView anchorForLayoutAttribute:(isVerticalAxis) ? NSLayoutAttributeBottom : NSLayoutAttributeTrailing];
 	}
 
-	[constraints addObjectsFromArray:@[[viewAnchor constraintEqualToAnchor:previousViewAnchor constant:self.spacing],
-									   [[view anchorForLayoutAttribute:layoutAttribute] constraintEqualToAnchor:[self anchorForLayoutAttribute:layoutAttribute] constant:spacing]]];
+	[constraints addObjectsFromArray:@[[viewAnchor constraintEqualToAnchor:previousViewAnchor constant:spacing],
+									   [[view anchorForLayoutAttribute:layoutAttribute] constraintEqualToAnchor:[self anchorForLayoutAttribute:layoutAttribute]]]];
 	
 	return constraints;
 }
@@ -159,21 +167,34 @@
 - (CGSize)calculateMinimumViewSize
 {
 	BOOL isVerticalAxis = UILayoutConstraintAxisIsVertical(self.axis);
-	CGFloat spacing = ( self.alignment == WBLayoutViewAlignmentLeading || self.alignment == WBLayoutViewAlignmentTrailing ) ? self.spacing : 0.0;
-
+	NSInteger visibleCount = 0;
 	CGFloat width = 0.0, height = 0.0;
 	for ( UIView *view in self.arrangedSubviews ) {
+		if ( view.isHidden ) continue;
+
+		++visibleCount;
+		
 		CGSize viewSize = [view intrinsicContentSize];
 		if ( isVerticalAxis ) {
-			width = MAX(width,viewSize.width + spacing);
-			height += viewSize.height+self.spacing;
+			// calculate height, width is max of all arranged views
+			width = MAX(width,viewSize.width);
+			height += viewSize.height;
 		}
 		else {
-			width += viewSize.width+self.spacing;
-			height = MAX(height, viewSize.height + spacing);
+			// calculate width, height is max of all arranged views
+			width += viewSize.width;
+			height = MAX(height, viewSize.height);
 		}
 	}
-	
+
+	CGFloat spacing = (visibleCount > 0) ? (visibleCount-1) * self.spacing : 0.0;
+	if ( isVerticalAxis ){
+		height += spacing;
+	}
+	else {
+		width += spacing;
+	}
+
 	CGSize size = (CGSize){width,height};
 	
 	return size;
@@ -184,6 +205,14 @@
 	if ( ![self.arrangedSubviews containsObject:subview] ) {
 		self.arrangedSubviews = [self.arrangedSubviews arrayByAddingObject:subview];
 		[self addSubview:subview];
+		[subview addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew context:NULL];
+#if _DEBUG_
+		NSInteger addr = (NSInteger)subview;
+		CGFloat hue = (addr & 0x0000000ff)/256.0;
+		subview.layer.borderColor = [[UIColor colorWithHue:hue
+												saturation:1.0 brightness:1.0 alpha:1.0] CGColor];
+		subview.layer.borderWidth = 1.0;
+#endif
 		[self setNeedsUpdateConstraints];
 	}
 }
@@ -192,6 +221,14 @@
 {
 	if ( ![self.arrangedSubviews containsObject:subview] ) {
 		self.arrangedSubviews = [self.arrangedSubviews arrayByAddingObject:subview];
+		[subview addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew context:NULL];
+#if _DEBUG_
+		NSInteger addr = (NSInteger)subview;
+		CGFloat hue = (addr & 0x0000000ff)/256.0;
+		subview.layer.borderColor = [[UIColor colorWithHue:hue
+												saturation:1.0 brightness:1.0 alpha:1.0] CGColor];
+		subview.layer.borderWidth = 1.0;
+#endif
 		[self insertSubview:subview atIndex:index];
 		[self setNeedsUpdateConstraints];
 	}
@@ -202,5 +239,24 @@
 	NSMutableArray * subviews = [self.arrangedSubviews mutableCopy];
 	[subviews removeObject:subview];
 	self.arrangedSubviews = subviews;
+	[subview removeObserver:subview forKeyPath:@"hidden"];
+}
+
+- (void)setAxis:(UILayoutConstraintAxis)axis
+{
+	[self willChangeValueForKey:@"axis"];
+	if ( _axis != axis ) {
+		_axis = axis;
+		[self setNeedsUpdateConstraints];
+	}
+	[self didChangeValueForKey:@"axis"];
+}
+#pragma KVO
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if ( [keyPath isEqualToString:@"hidden"] ) {
+		[self setNeedsUpdateConstraints];
+	}
 }
 @end

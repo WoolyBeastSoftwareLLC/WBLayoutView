@@ -27,7 +27,8 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:(CGRect){CGPointZero,(CGSize){200.0,15.0}}];
+//	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:(CGRect){CGPointZero,(CGSize){200.0,15.0}}];
+	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:CGRectZero];
 	layoutView.axis = UILayoutConstraintAxisVertical;
 	layoutView.spacing = 5.0;
 	layoutView.alignment = WBLayoutViewAlignmentCenter;
@@ -52,12 +53,20 @@
 	// Dispose of any resources that can be recreated.
 }
 
-- (void)awakeFromNib
+- (void)viewDidAppear:(BOOL)animated
 {
-	[super awakeFromNib];
+	[super viewDidAppear:animated];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		[UIView animateWithDuration:0.25 animations:^{
+			self.testImageView.hidden = YES;
+		}];
+	});
+	
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		self.layoutView.axis = UILayoutConstraintAxisHorizontal;
+	});
 	
 }
-
 #pragma mark -
 
 - (UILabel *)createTestLabel
