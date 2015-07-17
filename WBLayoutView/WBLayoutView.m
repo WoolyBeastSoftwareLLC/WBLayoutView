@@ -34,8 +34,8 @@
 @interface WBLayoutView()
 @property (nonatomic) NSArray *layoutConstraints;
 
-- (CGSize)calculateMinimumViewSize;
-- (NSArray *)constraintsForView:(UIView *)view relativeToPreviousView:(UIView *)previousView;
+- (NSArray *)constraintsForView:(UIView *)view relativeToPreviousView:(UIView *)previousView withSpacing:(CGFloat)spacing;
+- (NSArray *)calculateSpacing;
 @end
 
 #define	UILayoutConstraintAxisIsHorizontal(axis)		(axis==UILayoutConstraintAxisHorizontal)
@@ -72,6 +72,42 @@
 	[self setNeedsUpdateConstraints];
 }
 
+static BOOL UseStrictSpacing( WBLayoutViewDistribution distribution ) {
+	return distribution == WBLayoutViewDistributionFill || distribution == WBLayoutViewDistributionFillEqually || distribution == WBLayoutViewDistributionFillProportionally;
+}
+
+- (NSArray *)calculateSpacing
+{
+	NSMutableArray *spacings = nil;
+	NSArray *subviews = self.arrangedSubviews;
+	if ( subviews.count ) {
+		spacings = [NSMutableArray arrayWithCapacity:subviews.count+1];
+		spacings[0] = @(0.0);
+		if ( subviews.count > 1 ) {
+			CGSize size = [self minimumSizeForArrangedSubviews];
+			CGFloat spacing = self.spacing;
+			if ( !UseStrictSpacing(self.distribution) ) {
+				CGFloat extraSpacing = 0.0;
+				if ( self.axis == UILayoutConstraintAxisHorizontal ) {
+					extraSpacing = CGRectGetWidth(self.bounds) - size.width;
+				}
+				else {
+					extraSpacing = CGRectGetHeight(self.bounds) - size.height;
+				}
+				spacing += MAX(0.0,extraSpacing/subviews.count);
+			}
+
+			[subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+				spacings[idx+1] = @(spacing);
+			}];
+			spacings[subviews.count] = @(0.0);
+			
+		}
+	}
+	
+	return spacings;
+}
+
 - (void)updateConstraints
 {
 	[super updateConstraints];
@@ -79,39 +115,42 @@
 	// calculate new constraints...
 	NSMutableArray *constraints = [NSMutableArray new];
 	NSArray *views = self.arrangedSubviews;
-	UIView *previousView = nil;
-	for ( UIView *view in views ) {
-		if ( !view.isHidden) {
-			NSArray *viewConstraints = [self constraintsForView:view relativeToPreviousView:previousView];
+	__block UIView *previousView = nil;
+	
+	NSArray *spacings = [self calculateSpacing];
+	
+	[views enumerateObjectsUsingBlock:^(UIView *view, NSUInteger idx, BOOL *stop) {
+		if ( ![view isHidden] ) {
+			CGFloat spacing = [spacings[idx] floatValue];
+			
+			NSArray *viewConstraints = [self constraintsForView:view relativeToPreviousView:previousView withSpacing:spacing];
 			[constraints addObjectsFromArray:viewConstraints];
 			previousView = view;
 		}
+	}];
+	
+	UIView *lastView = self.arrangedSubviews.lastObject;
+	if ( lastView ) {
+		
+		[lastView.wb_trailingAnchor constraintEqualToAnchor:self.wb_trailingAnchor constant:[spacings.lastObject floatValue]];
 	}
 
 	// remove our old constraints...
 	if ( self.layoutConstraints ) {
 		[self removeConstraints:self.layoutConstraints];
 	}
+
 	self.layoutConstraints = nil;
 
 	// check that we have any constraints...
 	if ( constraints.count > 0 ) {
-		// adjust our size if neccessary...
-		CGSize size = [self calculateMinimumViewSize];
-		CGRect bounds = self.bounds;
-		if ( size.width > CGRectGetWidth(bounds) || size.height > CGRectGetHeight(bounds)) {
-			bounds.size.width = MAX(CGRectGetWidth(bounds), size.width);
-			bounds.size.height = MAX(CGRectGetHeight(bounds),size.height);
-			self.bounds = bounds;
-		}
-		
 		// set our new constraints...
 		self.layoutConstraints = constraints;
 		[self addConstraints:self.layoutConstraints];
 	}
 }
 
-- (NSArray *)constraintsForView:(UIView *)view relativeToPreviousView:(UIView *)previousView
+- (NSArray *)constraintsForView:(UIView *)view relativeToPreviousView:(UIView *)previousView withSpacing:(CGFloat)spacing
 {
 	NSMutableArray *constraints = [NSMutableArray array];
 	BOOL isVerticalAxis = UILayoutConstraintAxisIsVertical(self.axis);
@@ -119,15 +158,14 @@
 	NSLayoutAttribute layoutAttribute = NSLayoutAttributeNotAnAttribute;
 
 	WBLayoutViewAlignment alignment = self.alignment;
-	CGFloat spacing = (previousView) ? self.spacing : 0.0;
 	switch ( alignment ) {
 		case WBLayoutViewAlignmentFill : {
 			NSLayoutAttribute edge1Attribute = (isVerticalAxis) ? NSLayoutAttributeLeading : NSLayoutAttributeTop;
 			NSLayoutAttribute edge2Attribute = (isVerticalAxis) ? NSLayoutAttributeTrailing : NSLayoutAttributeBottom;
 			
 			NSArray *fillConstraints = @[
-										 [[view anchorForLayoutAttribute:edge1Attribute] constraintEqualToAnchor:[self anchorForLayoutAttribute:edge1Attribute]],
-										 [[view anchorForLayoutAttribute:edge2Attribute] constraintEqualToAnchor:[self anchorForLayoutAttribute:edge2Attribute]]
+										 [[view wb_anchorForLayoutAttribute:edge1Attribute] constraintEqualToAnchor:[self wb_anchorForLayoutAttribute:edge1Attribute]],
+										 [[view wb_anchorForLayoutAttribute:edge2Attribute] constraintEqualToAnchor:[self wb_anchorForLayoutAttribute:edge2Attribute]]
 										 ];
 			[constraints addObjectsFromArray:fillConstraints];
 			// fall through to leading to catch the 'pin edge'
@@ -146,25 +184,40 @@
 	}
 
 	NSAssert(layoutAttribute != NSLayoutAttributeNotAnAttribute,@"Invalid attrbute");
-	WBLayoutAnchor *viewAnchor = [view anchorForLayoutAttribute:(isVerticalAxis) ? NSLayoutAttributeTop : NSLayoutAttributeLeading];
+	WBLayoutAnchor *viewAnchor = [view wb_anchorForLayoutAttribute:(isVerticalAxis) ? NSLayoutAttributeTop : NSLayoutAttributeLeading];
 	WBLayoutAnchor *previousViewAnchor = nil;
 
 	if ( ! previousView ) {
-		previousViewAnchor = [self anchorForLayoutAttribute: (isVerticalAxis) ? NSLayoutAttributeTop : NSLayoutAttributeLeading];
+		previousViewAnchor = [self wb_anchorForLayoutAttribute: (isVerticalAxis) ? NSLayoutAttributeTop : NSLayoutAttributeLeading];
 	}
 	else {
-		previousViewAnchor =  [previousView anchorForLayoutAttribute:(isVerticalAxis) ? NSLayoutAttributeBottom : NSLayoutAttributeTrailing];
+		previousViewAnchor =  [previousView wb_anchorForLayoutAttribute:(isVerticalAxis) ? NSLayoutAttributeBottom : NSLayoutAttributeTrailing];
 	}
 
+	NSLayoutConstraint *intraSubviewConstraint = nil;
+	switch ( self.distribution ) {
+		case WBLayoutViewDistributionFillProportionally :
+			intraSubviewConstraint = [viewAnchor constraintEqualToAnchor:previousViewAnchor constant:spacing];
+			break;
+			
+		case WBLayoutViewDistributionEqualSpacing :
+			intraSubviewConstraint = [viewAnchor constraintEqualToAnchor:previousViewAnchor constant:spacing];
+			break;
+
+		case WBLayoutViewDistributionEqualCentering :
+			intraSubviewConstraint = [viewAnchor constraintGreaterThanOrEqualToAnchor:previousViewAnchor constant:spacing];
+			break;
+			
+	}
 	[constraints addObjectsFromArray:@[[viewAnchor constraintEqualToAnchor:previousViewAnchor constant:spacing],
-									   [[view anchorForLayoutAttribute:layoutAttribute] constraintEqualToAnchor:[self anchorForLayoutAttribute:layoutAttribute]]]];
+									   [[view wb_anchorForLayoutAttribute:layoutAttribute] constraintEqualToAnchor:[self wb_anchorForLayoutAttribute:layoutAttribute]]]];
 	
 	return constraints;
 }
 
 #pragma mark -
 
-- (CGSize)calculateMinimumViewSize
+- (CGSize)minimumSizeForArrangedSubviews
 {
 	BOOL isVerticalAxis = UILayoutConstraintAxisIsVertical(self.axis);
 	NSInteger visibleCount = 0;

@@ -29,7 +29,7 @@
 #import <UIKit/UIKit.h>
 
 typedef NS_ENUM(NSInteger, WBLayoutViewAlignment) {
-	WBLayoutViewAlignmentFill,
+	WBLayoutViewAlignmentFill = 0,
 	WBLayoutViewAlignmentLeading,
 	WBLayoutViewAlignmentTop = WBLayoutViewAlignmentLeading,
 	WBLayoutViewAlignmentTrailing,
@@ -38,8 +38,11 @@ typedef NS_ENUM(NSInteger, WBLayoutViewAlignment) {
 };
 
 typedef NS_ENUM(NSInteger, WBLayoutViewDistribution) {
-	WBLayoutViewDistributionEqualSpacing
-	// more forthcoming...
+	WBLayoutViewDistributionFill = 0,
+	WBLayoutViewDistributionFillEqually,
+	WBLayoutViewDistributionFillProportionally,
+	WBLayoutViewDistributionEqualSpacing,
+	WBLayoutViewDistributionEqualCentering
 };
 
 @interface WBLayoutView : UIView
@@ -52,4 +55,6 @@ typedef NS_ENUM(NSInteger, WBLayoutViewDistribution) {
 - (void)addArrangedSubview:(UIView *)subview;
 - (void)insertArrangedSubview:(UIView *)subview atIndex:(NSInteger)index;
 - (void)removeArrangedSubview:(UIView *)subview;
+
+- (CGSize)minimumSizeForArrangedSubviews;
 @end
