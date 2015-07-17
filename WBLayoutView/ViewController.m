@@ -27,8 +27,8 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-//	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:(CGRect){CGPointZero,(CGSize){200.0,15.0}}];
-	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:CGRectZero];
+	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:(CGRect){CGPointZero,(CGSize){200.0,100.0}}];
+//	WBLayoutView *layoutView = [[WBLayoutView alloc] initWithFrame:CGRectZero];
 	layoutView.axis = UILayoutConstraintAxisVertical;
 	layoutView.spacing = 5.0;
 	layoutView.alignment = WBLayoutViewAlignmentCenter;
