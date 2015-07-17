@@ -28,6 +28,19 @@
 
 #import <UIKit/UIKit.h>
 
+#if __IPHONE_OS_VERSION_MIN_REQUIRED <= __IPHONE_8_4
+#define	leftAnchor		wb_leftAnchor
+#define rightAnchor		wb_rightAnchor
+#define topAnchor		wb_topAnchor
+#define bottomAnchor	wb_bottomAnchor
+#define leadingAnchor	wb_leadingAnchor
+#define trailingAnchor	wb_trailingAnchor
+#define centerXAnchor	wb_centerXAnchor
+#define centerYAnchor	wb_centerYAnchor
+#define widthAnchor		wb_widthAnchor
+#define heightAnchor	wb_heightAnchor
+#endif
+
 @interface WBLayoutAnchor : NSObject
 - (NSLayoutConstraint *)constraintEqualToAnchor:(WBLayoutAnchor *)anchor;
 - (NSLayoutConstraint *)constraintEqualToAnchor:(WBLayoutAnchor *)anchor constant:(CGFloat)constant;
@@ -55,16 +68,16 @@
 
 
 @interface UIView(WBLayoutAnchor)
-- (WBLayoutAxisXAnchor *)leftAnchor;
-- (WBLayoutAxisXAnchor *)rightAnchor;
-- (WBLayoutAxisYAnchor *)topAnchor;
-- (WBLayoutAxisYAnchor *)bottomAnchor;
-- (WBLayoutAxisXAnchor *)leadingAnchor;
-- (WBLayoutAxisXAnchor *)trailingAnchor;
-- (WBLayoutAxisXAnchor *)centerXAnchor;
-- (WBLayoutAxisYAnchor *)centerYAnchor;
-- (WBLayoutDimension *)widthAnchor;
-- (WBLayoutDimension *)heightAnchor;
+- (WBLayoutAxisXAnchor *)wb_leftAnchor;
+- (WBLayoutAxisXAnchor *)wb_rightAnchor;
+- (WBLayoutAxisYAnchor *)wb_topAnchor;
+- (WBLayoutAxisYAnchor *)wb_bottomAnchor;
+- (WBLayoutAxisXAnchor *)wb_leadingAnchor;
+- (WBLayoutAxisXAnchor *)wb_trailingAnchor;
+- (WBLayoutAxisXAnchor *)wb_centerXAnchor;
+- (WBLayoutAxisYAnchor *)wb_centerYAnchor;
+- (WBLayoutDimension *)wb_widthAnchor;
+- (WBLayoutDimension *)wb_heightAnchor;
 
-- (WBLayoutAnchor *)anchorForLayoutAttribute:(NSLayoutAttribute)attribute;
+- (WBLayoutAnchor *)wb_anchorForLayoutAttribute:(NSLayoutAttribute)attribute;
 @end

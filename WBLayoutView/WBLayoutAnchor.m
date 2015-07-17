@@ -206,30 +206,30 @@
 #pragma mark -
 
 @implementation  UIView(WBLayoutAnchor)
-- (WBLayoutAxisXAnchor *)leftAnchor		{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeLeft]; }
-- (WBLayoutAxisXAnchor *)rightAnchor		{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeRight]; }
-- (WBLayoutAxisYAnchor *)topAnchor		{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeTop]; }
-- (WBLayoutAxisYAnchor *)bottomAnchor	{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeBottom]; }
-- (WBLayoutAxisXAnchor *)leadingAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeLeading]; }
-- (WBLayoutAxisXAnchor *)trailingAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeTrailing]; }
-- (WBLayoutAxisXAnchor *)centerXAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeCenterX]; }
-- (WBLayoutAxisYAnchor *)centerYAnchor	{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeCenterY]; }
-- (WBLayoutDimension *)widthAnchor		{ return [[WBLayoutDimension alloc] initWithView:self attribute:NSLayoutAttributeWidth]; }
-- (WBLayoutDimension *)heightAnchor		{ return [[WBLayoutDimension alloc] initWithView:self attribute:NSLayoutAttributeHeight]; }
-- (WBLayoutAnchor *)anchorForLayoutAttribute:(NSLayoutAttribute)attribute
+- (WBLayoutAxisXAnchor *)wb_leftAnchor		{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeLeft]; }
+- (WBLayoutAxisXAnchor *)wb_rightAnchor		{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeRight]; }
+- (WBLayoutAxisYAnchor *)wb_topAnchor		{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeTop]; }
+- (WBLayoutAxisYAnchor *)wb_bottomAnchor		{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeBottom]; }
+- (WBLayoutAxisXAnchor *)wb_leadingAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeLeading]; }
+- (WBLayoutAxisXAnchor *)wb_trailingAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeTrailing]; }
+- (WBLayoutAxisXAnchor *)wb_centerXAnchor	{ return [[WBLayoutAxisXAnchor alloc] initWithView:self attribute:NSLayoutAttributeCenterX]; }
+- (WBLayoutAxisYAnchor *)wb_centerYAnchor	{ return [[WBLayoutAxisYAnchor alloc] initWithView:self attribute:NSLayoutAttributeCenterY]; }
+- (WBLayoutDimension *)wb_widthAnchor		{ return [[WBLayoutDimension alloc] initWithView:self attribute:NSLayoutAttributeWidth]; }
+- (WBLayoutDimension *)wb_heightAnchor		{ return [[WBLayoutDimension alloc] initWithView:self attribute:NSLayoutAttributeHeight]; }
+- (WBLayoutAnchor *)wb_anchorForLayoutAttribute:(NSLayoutAttribute)attribute
 {
 	WBLayoutAnchor *anchor = nil;
 	switch (attribute) {
-		case NSLayoutAttributeTop		: anchor = self.topAnchor;		break;
-		case NSLayoutAttributeBottom		: anchor = self.bottomAnchor;	break;
-		case NSLayoutAttributeLeft		: anchor = self.leftAnchor;		break;
-		case NSLayoutAttributeRight		: anchor = self.rightAnchor;		break;
-		case NSLayoutAttributeLeading	: anchor = self.leadingAnchor;	break;
-		case NSLayoutAttributeTrailing	: anchor = self.trailingAnchor;	break;
-		case NSLayoutAttributeCenterX	: anchor = self.centerXAnchor;	break;
-		case NSLayoutAttributeCenterY	: anchor = self.centerYAnchor;	break;
-		case NSLayoutAttributeHeight		: anchor = self.heightAnchor;	break;
-		case NSLayoutAttributeWidth		: anchor = self.widthAnchor;		break;
+		case NSLayoutAttributeTop		: anchor = self.wb_topAnchor;		break;
+		case NSLayoutAttributeBottom		: anchor = self.wb_bottomAnchor;		break;
+		case NSLayoutAttributeLeft		: anchor = self.wb_leftAnchor;		break;
+		case NSLayoutAttributeRight		: anchor = self.wb_rightAnchor;		break;
+		case NSLayoutAttributeLeading	: anchor = self.wb_leadingAnchor;	break;
+		case NSLayoutAttributeTrailing	: anchor = self.wb_trailingAnchor;	break;
+		case NSLayoutAttributeCenterX	: anchor = self.wb_centerXAnchor;	break;
+		case NSLayoutAttributeCenterY	: anchor = self.wb_centerYAnchor;	break;
+		case NSLayoutAttributeHeight		: anchor = self.wb_heightAnchor;		break;
+		case NSLayoutAttributeWidth		: anchor = self.wb_widthAnchor;		break;
 	}
 	return anchor;
 }
